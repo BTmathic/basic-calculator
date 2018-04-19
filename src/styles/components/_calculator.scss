@@ -11,6 +11,19 @@ body {
     width: 35rem;
 }
 
+#top-panel {
+
+    width: 90%;
+}
+
+#logo {
+    font-size: 125%;
+    font-weight: bold;
+    margin-bottom: -10px;
+    padding-left: 10px;
+    padding-top: 10px;
+}
+
 #screen {
     background: #D5DDE0;
     background: linear-gradient(white, #D5DDE0);
@@ -65,4 +78,12 @@ body {
 .grey-button {
     background: #898F8D;
     font-size: 375%;
+}
+
+#on-off-button-text {
+    padding-top: 25px;
+}
+
+.clear-button-text {
+    padding-top: 10px;
 }

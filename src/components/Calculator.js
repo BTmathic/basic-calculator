@@ -36,7 +36,7 @@ export default class Calculator extends React.Component {
                 if (subDisplay === 0) {
                     subDisplay = button;
                 } else {
-                    subDisplay = subDisplay + button;
+                    subDisplay = (subDisplay + button).slice(0, 21);
                 }
                 this.setState(() => ({ subDisplay }));
             }
@@ -61,7 +61,9 @@ export default class Calculator extends React.Component {
                         // // will comment out everything thereafter, so we must
                         // manually force an error in these cases
                         if (this.state.subDisplay.indexOf('**') === -1 && this.state.subDisplay.indexOf('//') === -1) {
-                            result = eval(this.state.subDisplay);
+                            result = eval(this.state.subDisplay).toString().slice(0,9);
+                            result = this.testOverflow(result);
+
                         } else {
                             result = 'Error';
                         }
@@ -96,10 +98,18 @@ export default class Calculator extends React.Component {
                 }));
             } else if (this.state.subDisplay !== 0) {
                 try {
-                    this.setState((prevState) => ({
-                        evaluateOperation: false,
-                        subDisplay: -eval(prevState.subDisplay)
-                    }));
+                    const currentOp = this.state.subDisplay;
+                    if (currentOp[currentOp.length - 1] !== '.' &&
+                        currentOp[currentOp.length - 1] !== '+' &&
+                        currentOp[currentOp.length - 1] !== '-' &&
+                        currentOp[currentOp.length - 1] !== '*' &&
+                        currentOp[currentOp.length - 1] !== '/') {
+
+                        this.setState((prevState) => ({
+                            evaluateOperation: false,
+                            subDisplay: -eval(prevState.subDisplay)
+                        }));
+                    }
                 }
     
                 catch(e) {
@@ -114,7 +124,8 @@ export default class Calculator extends React.Component {
 
     handleEqualsPress = () => {
         try {
-            const result = eval(this.state.subDisplay);
+            let result = eval(this.state.subDisplay).toString().slice(0,9);
+            result = this.testOverflow(result);
             this.setState(() => ({
                 mainDisplay: result,
                 evaluateOperation: false,
@@ -131,6 +142,16 @@ export default class Calculator extends React.Component {
         }
     }
 
+    testOverflow = (result) => {
+        if (result > 99999999 || result < -9999999) {
+            result = 'Overflow';
+        } else if (result.indexOf('e') > -1) {
+            result = 0;
+        }
+
+        return result;
+    }
+
     handleClear = (type) => {
         this.setState(() => ({
             subDisplay: 0,
@@ -145,6 +166,9 @@ export default class Calculator extends React.Component {
         return (
             <div>
                 <div id='calculator'>
+                    <div id='logo'>
+                        Basic Calculator
+                    </div>
                     <div id='screen'>
                         <div id='main-screen'>
                             {this.state.isOn && this.state.mainDisplay}
@@ -157,15 +181,15 @@ export default class Calculator extends React.Component {
                         <div className='button-row'>
                             <div className='black-button button'
                                 onClick={()=> {this.handleOnOff()}}>
-                                ON/OFF
+                                <div id='on-off-button-text'>ON/OFF</div>
                             </div>
                             <div className='red-button button'
                                 onClick={() => {this.state.isOn && this.handleClear('all')}}>
-                                AC
+                                <div className='clear-button-text'>AC</div>
                             </div>
                             <div className='red-button button'
                                 onClick={() => {this.state.isOn && this.handleClear()}}>
-                                CE
+                                <div className='clear-button-text'>CE</div>
                             </div>
                             <div className='grey-button button'
                                 onClick={() => {this.state.isOn && this.handleOperationPress('+')}}>
