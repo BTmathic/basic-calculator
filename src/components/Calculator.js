@@ -1,289 +1,164 @@
 import React from 'react';
+import Screen from './Screen';
+import Buttons from './Buttons';
 
 export default class Calculator extends React.Component {
   state = {
     isOn: false,
-    mainDisplay: 0,
-    subDisplay: 0,
-    // we want to evaluate operations as soon as possible to reduce
-    // the chance of digit overflow being input
-    evaluateOperation: false,
-    // we also re-render the subDisplay on any keypress after
-    // completing an evaluation
-    evaluationComplete: false
+    mainDisplay: '0',
+    subDisplay: '0'
   }
 
-  handleOnOff = () => {
+  handlePowerButtonPress = () => {
     this.setState((prevState) => ({
       isOn: !prevState.isOn,
-      mainDisplay: 0,
-      subDisplay: 0,
-      evaluateOperation: false
+      mainDisplay: '0',
+      subDisplay: '0'
     }));
   }
 
-  handleNumberPress = (button) => {
-    if (this.state.mainDisplay !== 'Error') {
-      // If the user just completed a computation then pressing a number
-      // should ignore the previous calculation and start from scratch
-      if (this.state.evaluationComplete) {
-        this.setState(() => ({
-          subDisplay: button,
-          evaluationComplete: false
-        }));
-      } else {
-        let subDisplay = this.state.subDisplay;
-        if (subDisplay === 0) {
-          if (button !== '0') {
-            subDisplay = button;
-          }
-        } else {
-          subDisplay = (subDisplay + button).slice(0, 21);
-        }
-        this.setState(() => ({ subDisplay }));
-      }
-    }
+  handleClearAll = () => {
+    this.setState(() => ({
+      mainDisplay: '0',
+      subDisplay: '0'
+    }));
   }
 
-  handleOperationPress = (button) => {
-    if (this.state.mainDisplay !== 'Error') {
-      // If the user presses an operation button after doing a computation
-      // the operator is acting upon the previous result
-      if (this.state.evaluationComplete) {
-        this.setState((prevState) => ({
-          evaluationComplete: false,
-          subDisplay: prevState.mainDisplay + button
-        }));
-      } else {
-        if (this.state.evaluateOperation) {
-          try {
-            let result = undefined;
-            // we get an error for almost all incorrect sequences of
-            // button presses, but ** in javascript is exponent and
-            // // will comment out everything thereafter, so we must
-            // manually force an error in these cases
-            if (this.state.subDisplay.indexOf('**') === -1 && this.state.subDisplay.indexOf('//') === -1) {
-              result = eval(this.state.subDisplay).toString().slice(0, 9);
-              result = this.testOverflow(result);
-
-            } else {
-              result = 'Error';
-            }
-            this.setState(() => ({
-              subDisplay: result + button,
-              mainDisplay: result
-            }));
-          }
-
-          catch (e) {
-            this.setState((prevState) => ({
-              mainDisplay: 'Error',
-              subDisplay: prevState.subDisplay + button
-            }));
-          }
-        } else {
-          this.setState((prevState) => ({
-            subDisplay: prevState.subDisplay + button,
-            evaluateOperation: true
-          }));
-        }
-      }
-    }
-  }
-
-  handlePlusMinus = () => {
-    if (this.state.mainDisplay !== 'Error') {
-      if (this.state.evaluationComplete) {
-        this.setState((prevState) => ({
-          subDisplay: -prevState.mainDisplay,
-          evaluationComplete: false
-        }));
-      } else if (this.state.subDisplay !== 0) {
-        try {
-          const currentOp = this.state.subDisplay;
-          if (currentOp[currentOp.length - 1] !== '.' &&
-            currentOp[currentOp.length - 1] !== '+' &&
-            currentOp[currentOp.length - 1] !== '-' &&
-            currentOp[currentOp.length - 1] !== '*' &&
-            currentOp[currentOp.length - 1] !== '/') {
-
-            this.setState((prevState) => ({
-              evaluateOperation: false,
-              subDisplay: -eval(prevState.subDisplay)
-            }));
-          }
-        }
-
-        catch (e) {
-          this.setState(() => ({
-            mainDisplay: 'Error',
-            subDisplay: 0
-          }));
-        }
-      }
-    }
-  }
-
-  handleEqualsPress = () => {
-    try {
-      let inputReduced = false;
-      let subDisplay = this.state.subDisplay;
-      const regex1 = RegExp('-0', 'g')
-      while (!inputReduced) {
-        if (regex1.test(subDisplay)) {
-          console.log('dur');
-          subDisplay = subDisplay.replace(/-0/, '-');
-          //console.log(subDisplay.replace(/-0/, '-'));
-        } else {
-          inputReduced = true;
-        }
-      }
-      let result = eval(subDisplay).toString().slice(0, 9);
-      result = this.testOverflow(result);
-      this.setState(() => ({
-        mainDisplay: result,
-        evaluateOperation: false,
-        evaluationComplete: true
-      }));
-    }
-
-    catch (e) {
-      this.setState(() => ({
-        mainDisplay: 'Error',
-        evaluateOperation: false,
-        evaluationComplete: true
-      }));
-    }
+  handleClear = () => {
+    this.setState(() => ({ subDisplay: '0' }));
   }
 
   testOverflow = (result) => {
     if (result > 99999999 || result < -9999999) {
       result = 'Overflow';
-    } else if (result.indexOf('e') > -1) {
+    } else if (String(result).indexOf('e') > -1) {
       result = 0;
     }
 
     return result;
   }
 
-  handleClear = (type) => {
-    this.setState(() => ({
-      subDisplay: 0,
-      evaluateOperation: false
-    }));
-    if (type === 'all' || this.state.mainDisplay === 'Error') {
-      this.setState(() => ({ mainDisplay: 0 }));
+  fixRoundingErrors = (result) => {
+    result = String(result);
+    if (result.slice(9,15) === '000000') {
+      let endOfZeroes;
+      for (let i=15; i > 0; i--) {
+        if (result[i] !== '0' && !endOfZeroes) {
+          endOfZeroes = i;
+        }
+      }
+      result = result.slice('0',endOfZeroes+1);
+    } else if (result.slice(9,15) === '999999') {
+      let endOfNines;
+      for (let i=15; i > 0; i--) {
+        if (result[i] !== '9' && !endOfNines) {
+          endOfNines = i;
+        }
+      }
+      result = Math.round(result*Math.pow(10, endOfNines))/Math.pow(10, endOfNines);
+    } else {
+      result = result.slice(0,9);
+    }
+
+    return result;
+  };
+
+  handleButtonPress = (id, e) => {
+    if (this.state.isOn) {
+      const numbers = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+      const operations = ['add', 'subtract', 'multiply', 'divide'];
+      const operationsUse = ['+', '-', '*', '/'];
+      const currentState = this.state.subDisplay;
+      // we need to prevent invalid expressions as per FCC test suite, we check with the following
+      const lastElementClicked = currentState[currentState.length - 1];
+      const secondLastClicked = currentState[currentState.length - 2];
+
+      if (numbers.indexOf(id) > -1) {
+        // The only time a number cannot be entered is if it is a 0 and precedes other numbers
+        if (currentState === '0' || currentState.indexOf('=') !== -1) {
+          this.setState(() => ({ subDisplay: String(numbers.indexOf(id)) }));
+        } else if (lastElementClicked === '0' && operationsUse.indexOf(secondLastClicked) !== -1) {
+          this.setState((prevState) => ({
+            subDisplay: currentState.slice(0, -1) + numbers.indexOf(id)
+          }));
+        } else {
+          this.setState((prevState) => ({
+            subDisplay: currentState + numbers.indexOf(id)
+          }));
+        }
+      } else if (operations.indexOf(id) > -1) {
+        if (currentState !== '0' && currentState.indexOf('=') === -1) {
+          if (parseInt(lastElementClicked) > -1) {
+            this.setState((prevState) => ({
+              subDisplay: currentState + operationsUse[operations.indexOf(id)]
+            }));
+          } else if (operationsUse.indexOf(lastElementClicked) !== -1) {
+            this.setState((prevState) => ({
+              subDisplay: currentState.slice(0, -1) + operationsUse[operations.indexOf(id)]
+            }));
+          }
+        } else if (currentState.indexOf('=') !== -1 || (currentState === '0' && this.state.mainDisplay !== '0')) {
+          this.setState((prevState) => ({
+            subDisplay: prevState.mainDisplay + operationsUse[operations.indexOf(id)]
+          }));
+        }
+      } else if (id === 'back') {
+        this.setState((prevState) => ({ subDisplay: prevState.subDisplay.slice(0, -1) }));
+      } else if (id === 'decimal') {
+        let lastNumberHasDecimal = true;
+        for (let i = 0; i < operationsUse.length; i++) {
+          const numbers = currentState.split(operationsUse[i]);
+          if (numbers[numbers.length - 1].indexOf('.') === -1) {
+            lastNumberHasDecimal = false;
+          }
+        }
+        if (!lastNumberHasDecimal && currentState.indexOf('=') === -1) {
+          this.setState((prevState) => ({ subDisplay: prevState.subDisplay + '.' }));
+        } else if (currentState.indexOf('=') !== -1) {
+          this.setState(() => ({ subDisplay: '.' }));
+        }
+      } else if (id === 'equals') {
+        try { // mostly used while testing, but safe to leave just in case
+          let result = eval(currentState);
+          result = this.testOverflow(result);
+          if (String(result).length > 9) {
+            result = this.fixRoundingErrors(result);
+          }
+          this.setState((prevState) => ({
+            mainDisplay: result,
+            subDisplay: prevState.subDisplay + '=' + result,
+            evaluateOperation: false,
+            evaluationComplete: true
+          }));
+        }
+
+        catch (e) {
+          this.setState(() => ({
+            mainDisplay: 'Error',
+            evaluateOperation: false,
+            evaluationComplete: true
+          }));
+        }
+      }
     }
   }
 
   render() {
     return (
-      <div>
-        <div id='calculator'>
-          <div id='logo'>
-            Basic Calculator
-                    </div>
-          <div id='screen'>
-            <div id='main-screen'>
-              {this.state.isOn && this.state.mainDisplay}
-            </div>
-            <div id='sub-screen'>
-              {this.state.isOn && this.state.subDisplay}
-            </div>
-          </div>
-          <div id='buttons'>
-            <div className='button-row'>
-              <div className='black-button button'
-                onClick={() => { this.handleOnOff() }}>
-                <div id='on-off-button-text'>ON/OFF</div>
-              </div>
-              <div className='red-button button'
-                onClick={() => { this.state.isOn && this.handleClear('all') }}>
-                <div className='clear-button-text'>AC</div>
-              </div>
-              <div className='red-button button'
-                onClick={() => { this.state.isOn && this.handleClear() }}>
-                <div className='clear-button-text'>CE</div>
-              </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleOperationPress('+') }}>
-                &#43;
-              </div>
-            </div>
-            <div className='button-row'>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleNumberPress('7') }}>
-                7
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleNumberPress('8') }}>
-                8
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleNumberPress('9') }}>
-                9
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleOperationPress('-') }}>
-                &minus;
-                            </div>
-            </div>
-            <div className='button-row'>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleNumberPress('4') }}>
-                4
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleNumberPress('5') }}>
-                5
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleNumberPress('6') }}>
-                6
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleOperationPress('*') }}>
-                &times;
-                            </div>
-            </div>
-            <div className='button-row'>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleNumberPress('1') }}>
-                1
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleNumberPress('2') }}>
-                2
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleNumberPress('3') }}>
-                3
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleOperationPress('/') }}>
-                &divide;
-                            </div>
-            </div>
-            <div className='button-row'>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleNumberPress('0') }}>
-                0
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleNumberPress('.') }}>
-                .
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handleEqualsPress('=') }}>
-                =
-                            </div>
-              <div className='grey-button button'
-                onClick={() => { this.state.isOn && this.handlePlusMinus('pm') }}>
-                &plusmn;
-                            </div>
-            </div>
-          </div>
+      <div id='calculator'>
+        <div id='logo'>
+          Basic Calculator
         </div>
+        <Screen
+          isOn={this.state.isOn}
+          mainDisplay={this.state.mainDisplay}
+          subDisplay={this.state.subDisplay}
+        />
+        <Buttons handlePowerButtonPress={this.handlePowerButtonPress}
+          handleClearAll={this.handleClearAll}
+          handleClear={this.handleClear}
+          handleButtonPress={this.handleButtonPress}
+        />
       </div>
     );
   }
