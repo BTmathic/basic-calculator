@@ -41,17 +41,18 @@ body {
     text-align: right;
 }
 
-#sub-screen {
+#display {
     font-size: 120%;
     margin: -0.5rem 1rem;
     text-align: right;
 }
 
-.button-row {
-    display: flex;
-    height: 9rem;
-    margin-left: 1rem;
-    width: 100%;
+#buttons {
+  display: flex;
+  flex-wrap: wrap;
+  height: 45rem;
+  margin-left: 1rem;
+  width: 100%;
 }
 
 .button {
@@ -69,21 +70,22 @@ body {
 
 .black-button {
     background: black;
+    p {
+      margin-top: 25px;
+    }
 }
 .red-button {
     background: red;
     font-size: 250%;
+    p {
+      margin-top: 10px;
+    }
 }
 
 .grey-button {
     background: #898F8D;
     font-size: 375%;
-}
-
-#on-off-button-text {
-    padding-top: 25px;
-}
-
-.clear-button-text {
-    padding-top: 10px;
+    p {
+      margin-top: 0px;
+    }
 }
