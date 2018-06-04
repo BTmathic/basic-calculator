@@ -20,8 +20,8 @@ export default (props) => (
     />
     <Button click={props.handleButtonPress}
       buttonColour={'grey-button'}
-      buttonValue={'+'}
-      buttonID={'add'}
+      buttonValue={'<'}
+      buttonID={'back'}
     />
     <Button click={props.handleButtonPress}
       buttonColour={'grey-button'}
@@ -40,8 +40,8 @@ export default (props) => (
     />
     <Button click={props.handleButtonPress}
       buttonColour={'grey-button'}
-      buttonValue={'-'}
-      buttonID={'subtract'}
+      buttonValue={'+'}
+      buttonID={'add'}
     />
     <Button click={props.handleButtonPress}
       buttonColour={'grey-button'}
@@ -60,8 +60,8 @@ export default (props) => (
     />
     <Button click={props.handleButtonPress}
       buttonColour={'grey-button'}
-      buttonValue={'x'}
-      buttonID={'multiply'}
+      buttonValue={'-'}
+      buttonID={'subtract'}
     />
     <Button click={props.handleButtonPress}
       buttonColour={'grey-button'}
@@ -80,8 +80,8 @@ export default (props) => (
     />
     <Button click={props.handleButtonPress}
       buttonColour={'grey-button'}
-      buttonValue={'/'}
-      buttonID={'divide'}
+      buttonValue={'x'}
+      buttonID={'multiply'}
     />
     <Button click={props.handleButtonPress}
       buttonColour={'grey-button'}
@@ -100,8 +100,8 @@ export default (props) => (
     />
     <Button click={props.handleButtonPress}
       buttonColour={'grey-button'}
-      buttonValue={'+/-'}
-      buttonID={'plusminus'}
+      buttonValue={'/'}
+      buttonID={'divide'}
     />
   </div>
 );
