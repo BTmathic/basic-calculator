@@ -16,7 +16,7 @@ export default (props) => (
     <Button click={props.handleClear}
       buttonColour={'red-button'}
       buttonValue={'CE'}
-      buttonID={'all-clear'}
+      buttonID={'clear'}
     />
     <Button click={props.handleButtonPress}
       buttonColour={'grey-button'}

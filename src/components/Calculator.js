@@ -4,7 +4,7 @@ import Buttons from './Buttons';
 
 export default class Calculator extends React.Component {
   state = {
-    isOn: false,
+    isOn: true,
     mainDisplay: '0',
     subDisplay: '0'
   }
@@ -68,7 +68,7 @@ export default class Calculator extends React.Component {
       const numbers = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
       const operations = ['add', 'subtract', 'multiply', 'divide'];
       const operationsUse = ['+', '-', '*', '/'];
-      const currentState = this.state.subDisplay;
+      const currentState = String(this.state.subDisplay);
       // we need to prevent invalid expressions as per FCC test suite, we check with the following
       const lastElementClicked = currentState[currentState.length - 1];
       const secondLastClicked = currentState[currentState.length - 2];
@@ -126,7 +126,7 @@ export default class Calculator extends React.Component {
           }
           this.setState((prevState) => ({
             mainDisplay: result,
-            subDisplay: prevState.subDisplay + '=' + result,
+            subDisplay: result,
             evaluateOperation: false,
             evaluationComplete: true
           }));

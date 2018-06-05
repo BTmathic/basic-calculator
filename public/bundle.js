@@ -20685,7 +20685,7 @@ var Calculator = function (_React$Component) {
     }
 
     return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = Calculator.__proto__ || Object.getPrototypeOf(Calculator)).call.apply(_ref, [this].concat(args))), _this), _this.state = {
-      isOn: false,
+      isOn: true,
       mainDisplay: '0',
       subDisplay: '0'
     }, _this.handlePowerButtonPress = function () {
@@ -20743,7 +20743,7 @@ var Calculator = function (_React$Component) {
         var numbers = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
         var operations = ['add', 'subtract', 'multiply', 'divide'];
         var operationsUse = ['+', '-', '*', '/'];
-        var currentState = _this.state.subDisplay;
+        var currentState = String(_this.state.subDisplay);
         // we need to prevent invalid expressions as per FCC test suite, we check with the following
         var lastElementClicked = currentState[currentState.length - 1];
         var secondLastClicked = currentState[currentState.length - 2];
@@ -20821,7 +20821,7 @@ var Calculator = function (_React$Component) {
             _this.setState(function (prevState) {
               return {
                 mainDisplay: result,
-                subDisplay: prevState.subDisplay + '=' + result,
+                subDisplay: result,
                 evaluateOperation: false,
                 evaluationComplete: true
               };
@@ -20945,7 +20945,7 @@ exports.default = function (props) {
     _react2.default.createElement(_Button2.default, { click: props.handleClear,
       buttonColour: 'red-button',
       buttonValue: 'CE',
-      buttonID: 'all-clear'
+      buttonID: 'clear'
     }),
     _react2.default.createElement(_Button2.default, { click: props.handleButtonPress,
       buttonColour: 'grey-button',
@@ -21058,11 +21058,7 @@ exports.default = function (props) {
     { className: 'button ' + props.buttonColour, id: props.buttonID, onClick: function onClick(e) {
         props.click(props.buttonID, e);
       } },
-    _react2.default.createElement(
-      'p',
-      null,
-      props.buttonValue
-    )
+    props.buttonValue
   );
 };
 
