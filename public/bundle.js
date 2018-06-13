@@ -20687,7 +20687,8 @@ var Calculator = function (_React$Component) {
     return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = Calculator.__proto__ || Object.getPrototypeOf(Calculator)).call.apply(_ref, [this].concat(args))), _this), _this.state = {
       isOn: true,
       mainDisplay: '0',
-      subDisplay: '0'
+      subDisplay: '0',
+      equalsPressedLast: false
     }, _this.handlePowerButtonPress = function () {
       _this.setState(function (prevState) {
         return {
@@ -20708,7 +20709,7 @@ var Calculator = function (_React$Component) {
         return { subDisplay: '0' };
       });
     }, _this.testOverflow = function (result) {
-      if (result > 99999999 || result < -9999999) {
+      if (result > 999999999 || result < -9999999) {
         result = 'Overflow';
       } else if (String(result).indexOf('e') > -1) {
         result = 0;
@@ -20739,103 +20740,133 @@ var Calculator = function (_React$Component) {
 
       return result;
     }, _this.handleButtonPress = function (id, e) {
-      if (_this.state.isOn) {
-        var numbers = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
-        var operations = ['add', 'subtract', 'multiply', 'divide'];
-        var operationsUse = ['+', '-', '*', '/'];
-        var currentState = String(_this.state.subDisplay);
-        // we need to prevent invalid expressions as per FCC test suite, we check with the following
-        var lastElementClicked = currentState[currentState.length - 1];
-        var secondLastClicked = currentState[currentState.length - 2];
+      if (_this.state.equalsPressedLast) {
+        _this.setState(function () {
+          return { equalsPressedLast: false };
+        });
+      }
+      if (_this.state.isOn && (_this.state.subDisplay.length < 25 || id === 'back' || id === 'equals')) {
+        if (_this.state.subDisplay !== 'Digit Limit') {
+          var numbers = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+          var operations = ['add', 'subtract', 'multiply', 'divide'];
+          var operationsUse = ['+', '-', '*', '/'];
+          var currentState = String(_this.state.subDisplay);
+          // we need to prevent invalid expressions as per FCC test suite, we check with the following
+          var lastElementClicked = currentState[currentState.length - 1];
+          var secondLastClicked = currentState[currentState.length - 2];
 
-        if (numbers.indexOf(id) > -1) {
-          // The only time a number cannot be entered is if it is a 0 and precedes other numbers
-          if (currentState === '0' || currentState.indexOf('=') !== -1) {
-            _this.setState(function () {
-              return { subDisplay: String(numbers.indexOf(id)) };
-            });
-          } else if (lastElementClicked === '0' && operationsUse.indexOf(secondLastClicked) !== -1) {
-            _this.setState(function (prevState) {
-              return {
-                subDisplay: currentState.slice(0, -1) + numbers.indexOf(id)
-              };
-            });
-          } else {
-            _this.setState(function (prevState) {
-              return {
-                subDisplay: currentState + numbers.indexOf(id)
-              };
-            });
-          }
-        } else if (operations.indexOf(id) > -1) {
-          if (currentState !== '0' && currentState.indexOf('=') === -1) {
-            if (parseInt(lastElementClicked) > -1) {
+          if (numbers.indexOf(id) > -1) {
+            // The only time a number cannot be entered is if it is a 0 and precedes other numbers
+            if (currentState === '0' || _this.state.equalsPressedLast) {
+              _this.setState(function () {
+                return { subDisplay: String(numbers.indexOf(id)) };
+              });
+            } else if (lastElementClicked === '0' && operationsUse.indexOf(secondLastClicked) !== -1) {
               _this.setState(function (prevState) {
                 return {
-                  subDisplay: currentState + operationsUse[operations.indexOf(id)]
+                  subDisplay: currentState.slice(0, -1) + numbers.indexOf(id)
                 };
               });
-            } else if (operationsUse.indexOf(lastElementClicked) !== -1) {
+            } else {
               _this.setState(function (prevState) {
                 return {
-                  subDisplay: currentState.slice(0, -1) + operationsUse[operations.indexOf(id)]
+                  subDisplay: currentState + numbers.indexOf(id)
                 };
               });
             }
-          } else if (currentState.indexOf('=') !== -1 || currentState === '0' && _this.state.mainDisplay !== '0') {
-            _this.setState(function (prevState) {
-              return {
-                subDisplay: prevState.mainDisplay + operationsUse[operations.indexOf(id)]
-              };
-            });
-          }
-        } else if (id === 'back') {
-          _this.setState(function (prevState) {
-            return { subDisplay: prevState.subDisplay.slice(0, -1) };
-          });
-        } else if (id === 'decimal') {
-          var lastNumberHasDecimal = true;
-          for (var i = 0; i < operationsUse.length; i++) {
-            var _numbers = currentState.split(operationsUse[i]);
-            if (_numbers[_numbers.length - 1].indexOf('.') === -1) {
-              lastNumberHasDecimal = false;
+          } else if (operations.indexOf(id) > -1) {
+            if ((currentState !== '0' || id === 'subtract') && !_this.state.equalsPressedLast) {
+              if (parseInt(lastElementClicked) > -1) {
+                var subDisplay = currentState === '0' ? '' : currentState;
+                subDisplay = subDisplay.concat(operationsUse[operations.indexOf(id)]);
+                _this.setState(function () {
+                  return { subDisplay: subDisplay };
+                });
+              } else if (operationsUse.indexOf(lastElementClicked) !== -1 && _this.state.subDisplay.length !== 1) {
+                _this.setState(function (prevState) {
+                  return {
+                    subDisplay: currentState.slice(0, -1) + operationsUse[operations.indexOf(id)]
+                  };
+                });
+              }
+            } else if (!_this.state.equalsPressedLast || currentState === '0' && _this.state.mainDisplay !== '0') {
+              _this.setState(function (prevState) {
+                return {
+                  subDisplay: prevState.mainDisplay + operationsUse[operations.indexOf(id)]
+                };
+              });
             }
-          }
-          if (!lastNumberHasDecimal && currentState.indexOf('=') === -1) {
-            _this.setState(function (prevState) {
-              return { subDisplay: prevState.subDisplay + '.' };
-            });
-          } else if (currentState.indexOf('=') !== -1) {
-            _this.setState(function () {
-              return { subDisplay: '.' };
-            });
-          }
-        } else if (id === 'equals') {
-          try {
-            // mostly used while testing, but safe to leave just in case
-            var result = eval(currentState);
-            result = _this.testOverflow(result);
-            if (String(result).length > 9) {
-              result = _this.fixRoundingErrors(result);
+          } else if (id === 'back') {
+            var newDisplay = void 0;
+            if (_this.state.subDisplay.length === 1) {
+              newDisplay = '0';
+            } else {
+              newDisplay = _this.state.subDisplay.slice(0, -1);
             }
-            _this.setState(function (prevState) {
-              return {
-                mainDisplay: result,
-                subDisplay: result,
-                evaluateOperation: false,
-                evaluationComplete: true
-              };
-            });
-          } catch (e) {
             _this.setState(function () {
-              return {
-                mainDisplay: 'Error',
-                evaluateOperation: false,
-                evaluationComplete: true
-              };
+              return { subDisplay: newDisplay };
             });
+          } else if (id === 'decimal') {
+            var lastNumberHasDecimal = true;
+            for (var i = 0; i < operationsUse.length; i++) {
+              var _numbers = currentState.split(operationsUse[i]);
+              if (_numbers[_numbers.length - 1].indexOf('.') === -1) {
+                lastNumberHasDecimal = false;
+              }
+            }
+            if (!lastNumberHasDecimal && !_this.state.equalsPressedLast) {
+              _this.setState(function (prevState) {
+                return { subDisplay: prevState.subDisplay + '.' };
+              });
+            } else if (!_this.state.equalsPressedLast) {
+              _this.setState(function () {
+                return { subDisplay: '.' };
+              });
+            }
+          } else if (id === 'equals') {
+            _this.setState(function () {
+              return { equalsPressedLast: true };
+            });
+            try {
+              // mostly used while testing, but safe to leave just in case
+              var result = eval(currentState);
+              result = _this.testOverflow(result);
+              if (String(result).length > 9) {
+                result = _this.fixRoundingErrors(result);
+              }
+              if (result !== 'Overflow') {
+                _this.setState(function () {
+                  return { subDisplay: result.toString() };
+                });
+              }
+              _this.setState(function () {
+                return {
+                  mainDisplay: result,
+                  evaluateOperation: false,
+                  evaluationComplete: true
+                };
+              });
+            } catch (e) {
+              _this.setState(function () {
+                return {
+                  mainDisplay: 'Error',
+                  evaluateOperation: false,
+                  evaluationComplete: true
+                };
+              });
+            }
           }
         }
+      } else if (_this.state.isOn) {
+        var currentDisplay = _this.state.subDisplay;
+        _this.setState(function () {
+          return { subDisplay: 'Digit Limit' };
+        });
+        setTimeout(function () {
+          return _this.setState(function () {
+            return { subDisplay: currentDisplay };
+          });
+        }, 1000);
       }
     }, _temp), _possibleConstructorReturn(_this, _ret);
   }
@@ -20887,9 +20918,6 @@ var _react2 = _interopRequireDefault(_react);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// need to handle resizing the screen in case the computation overflows
-// probably easy to do here, check subDisplay length and if big enough
-// do something? Mostly CSS? Hm...
 exports.default = function (props) {
   return _react2.default.createElement(
     'div',
