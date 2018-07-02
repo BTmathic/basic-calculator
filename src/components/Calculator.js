@@ -41,24 +41,24 @@ export default class Calculator extends React.Component {
 
   fixRoundingErrors = (result) => {
     result = String(result);
-    if (result.slice(9,15) === '000000') {
+    if (result.slice(9, 15) === '000000') {
       let endOfZeroes;
-      for (let i=15; i > 0; i--) {
+      for (let i = 15; i > 0; i--) {
         if (result[i] !== '0' && !endOfZeroes) {
           endOfZeroes = i;
         }
       }
-      result = result.slice('0',endOfZeroes+1);
-    } else if (result.slice(9,15) === '999999') {
+      result = result.slice('0', endOfZeroes + 1);
+    } else if (result.slice(9, 15) === '999999') {
       let endOfNines;
-      for (let i=15; i > 0; i--) {
+      for (let i = 15; i > 0; i--) {
         if (result[i] !== '9' && !endOfNines) {
           endOfNines = i;
         }
       }
-      result = Math.round(result*Math.pow(10, endOfNines))/Math.pow(10, endOfNines);
+      result = Math.round(result * Math.pow(10, endOfNines)) / Math.pow(10, endOfNines);
     } else {
-      result = result.slice(0,9);
+      result = result.slice(0, 9);
     }
 
     return result;
@@ -157,7 +157,7 @@ export default class Calculator extends React.Component {
       }
     } else if (this.state.isOn) {
       const currentDisplay = this.state.subDisplay;
-      this.setState(() => ({ subDisplay: 'Digit Limit'}));
+      this.setState(() => ({ subDisplay: 'Digit Limit' }));
       setTimeout(() => this.setState(() => ({ subDisplay: currentDisplay })), 1000);
     }
   }
